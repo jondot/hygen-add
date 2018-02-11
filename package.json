@@ -1,0 +1,32 @@
+{
+  "name": "hygen-add",
+  "version": "1.0.0",
+  "license": "MIT",
+  "bin": {
+    "hygen-add": "dist/bin.js"
+  },
+  "scripts": {
+    "watch": "tsc -w",
+    "build": "tsc",
+    "start": "node dist/main.js",
+    "hygen-add": "node dist/bin.js"
+  },
+  "dependencies": {
+    "chalk": "^2.3.0",
+    "execa": "^0.9.0",
+    "fs-extra": "^5.0.0",
+    "inquirer": "^5.1.0",
+    "lodash": "^4.17.5",
+    "ora": "^1.4.0",
+    "yarn": "^1.3.2"
+  },
+  "devDependencies": {
+    "@types/chalk": "^2.2.0",
+    "@types/fs-extra": "^5.0.0",
+    "@types/inquirer": "^0.0.36",
+    "@types/lodash": "^4.14.102",
+    "@types/node": "^9.4.4",
+    "@types/ora": "^1.3.1",
+    "tslint-config-prettier": "^1.7.0"
+  }
+}

@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import chalk from 'chalk'
 import execa from 'execa'
 import fs from 'fs-extra'
@@ -11,7 +13,6 @@ const tmpl = x => path.join('_templates', x)
 const main = async () => {
   const { red, green, yellow } = chalk
   const args = process.argv.slice(2)
-  console.log('hello hygen-add', args)
   if (args.length !== 1) {
     console.log('please specify a package to add')
     process.exit(1)
@@ -44,7 +45,7 @@ const main = async () => {
           await inquirer
             .prompt([
               {
-                message: `'${g}' already exists. Namespace it to '${namespaced}'? (y/N): `,
+                message: `'${g}' already exists. Namespace it to '${namespaced}'? (Y/n): `,
                 name: 'namespace',
                 prefix: '      🤔 :',
                 type: 'confirm'

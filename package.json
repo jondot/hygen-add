@@ -1,6 +1,6 @@
 {
-  "name": "hygen-add",
-  "version": "1.0.0",
+  "name": "hygen-import",
+  "version": "1.0.3",
   "license": "MIT",
   "bin": {
     "hygen-add": "dist/bin.js"

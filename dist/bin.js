@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 "use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -21,7 +22,6 @@ const tmpl = x => path_1.default.join('_templates', x);
 const main = () => __awaiter(this, void 0, void 0, function* () {
     const { red, green, yellow } = chalk_1.default;
     const args = process.argv.slice(2);
-    console.log('hello hygen-add', args);
     if (args.length !== 1) {
         console.log('please specify a package to add');
         process.exit(1);
@@ -46,7 +46,7 @@ const main = () => __awaiter(this, void 0, void 0, function* () {
                 if (yield inquirer_1.default
                     .prompt([
                     {
-                        message: `'${g}' already exists. Namespace it to '${namespaced}'? (y/N): `,
+                        message: `'${g}' already exists. Namespace it to '${namespaced}'? (Y/n): `,
                         name: 'namespace',
                         prefix: '      🤔 :',
                         type: 'confirm'

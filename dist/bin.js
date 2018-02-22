@@ -16,64 +16,75 @@ const chalk_1 = __importDefault(require("chalk"));
 const execa_1 = __importDefault(require("execa"));
 const fs_extra_1 = __importDefault(require("fs-extra"));
 const inquirer_1 = __importDefault(require("inquirer"));
+const lodash_1 = __importDefault(require("lodash"));
 const ora_1 = __importDefault(require("ora"));
 const path_1 = __importDefault(require("path"));
+const yargs_parser_1 = __importDefault(require("yargs-parser"));
+const url_1 = __importDefault(require("url"));
+const help = `Please specify a package to add.
+
+$ hygen-add PACKAGE [--name NAME] [--prefix PREFIX] 
+
+  PACKAGE: npm module or Git repository
+           - note: for an npm module named 'hygen-react', PACKAGE is 'react'
+   --name: package name for a Git repo when cannot infer from repo URL (optional)
+ --prefix: prefix added generators, avoids clashing names (optional)
+`;
 const tmpl = x => path_1.default.join('_templates', x);
+const resolvePackage = (pkg, opts) => {
+    if (pkg.match(/^http/)) {
+        if (opts.name) {
+            return { name: opts.name, isUrl: true };
+        }
+        return { name: lodash_1.default.last(url_1.default.parse(pkg).path.split('/')), isUrl: true };
+    }
+    return { name: `hygen-${pkg}`, isUrl: false };
+};
 const main = () => __awaiter(this, void 0, void 0, function* () {
     const { red, green, yellow } = chalk_1.default;
-    const args = process.argv.slice(2);
-    if (args.length !== 1) {
-        console.log('please specify a package to add');
+    const args = yargs_parser_1.default(process.argv.slice(2));
+    const [pkg] = args._;
+    if (!pkg) {
+        console.log(help);
         process.exit(1);
     }
-    const [pkg] = args;
-    const spinner = ora_1.default(`Adding: ${pkg}`).start();
+    console.log(args);
+    const { name, isUrl } = resolvePackage(pkg, args);
+    const spinner = ora_1.default(`Adding: ${name}`).start();
     try {
-        const pkgName = `hygen-${pkg}`;
-        yield execa_1.default.shell(`${path_1.default.join(__dirname, '../node_modules/.bin/')}yarn add --dev ${pkgName}`);
-        const templatePath = path_1.default.join('./node_modules', pkgName, '_templates');
+        yield execa_1.default.shell(`${path_1.default.join(__dirname, '../node_modules/.bin/')}yarn add --dev ${isUrl ? pkg : name}`);
+        const templatePath = path_1.default.join('./node_modules', name, '_templates');
         const exists = yield fs_extra_1.default.pathExists(templatePath);
         yield fs_extra_1.default.mkdirp('_templates');
-        // this copies or conditionally namespaces the generators with a dash '-'
-        // pkg-generator
-        console.log('');
+        spinner.stop();
         for (const g of yield fs_extra_1.default.readdir(templatePath)) {
-            const wantedTargetPath = tmpl(g);
+            const maybePrefixed = args.prefix ? `${args.prefix}-${g}` : g;
+            const wantedTargetPath = tmpl(maybePrefixed);
             const sourcePath = path_1.default.join(templatePath, g);
-            const namespaced = `${pkg}-${g}`;
             if (yield fs_extra_1.default.pathExists(wantedTargetPath)) {
-                spinner.stop();
-                if (yield inquirer_1.default
+                if (!(yield inquirer_1.default
                     .prompt([
                     {
-                        message: `'${g}' already exists. Namespace it to '${namespaced}'? (Y/n): `,
-                        name: 'namespace',
+                        message: `'${maybePrefixed}' already exists. Overwrite? (Y/n): `,
+                        name: 'overwrite',
                         prefix: '      🤔 :',
                         type: 'confirm'
                     }
                 ])
-                    .then(({ namespace }) => namespace)) {
-                    yield fs_extra_1.default.copy(sourcePath, tmpl(namespaced), {
-                        recursive: true
-                    });
-                    console.log(green(`   Added: ${namespaced} (renamed from ${g})`));
-                }
-                else {
-                    console.log(yellow(` Skipped: ${g}`));
+                    .then(({ overwrite }) => overwrite))) {
+                    console.log(yellow(` skipped: ${maybePrefixed}`));
+                    continue;
                 }
             }
-            else {
-                yield fs_extra_1.default.copy(sourcePath, wantedTargetPath, {
-                    recursive: true
-                });
-                console.log(green(`   Added: ${g}`));
-            }
+            yield fs_extra_1.default.copy(sourcePath, wantedTargetPath, {
+                recursive: true
+            });
+            console.log(green(`   added: ${maybePrefixed}`));
         }
     }
     catch (ex) {
-        console.log(red(`\n\nCan't add ${pkg}:\n\n`), ex);
+        console.log(red(`\n\nCan't add ${name}${isUrl ? ` (source: ${pkg})` : ''}\n\n`), ex);
     }
-    spinner.stop();
 });
 main();
 //# sourceMappingURL=bin.js.map

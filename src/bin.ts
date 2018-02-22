@@ -7,70 +7,88 @@ import inquirer from 'inquirer'
 import L from 'lodash'
 import ora from 'ora'
 import path from 'path'
+import parser from 'yargs-parser'
+import URL from 'url'
+
+const help = `Please specify a package to add.
+
+$ hygen-add PACKAGE [--name NAME] [--prefix PREFIX] 
+
+  PACKAGE: npm module or Git repository
+           - note: for an npm module named 'hygen-react', PACKAGE is 'react'
+   --name: package name for a Git repo when cannot infer from repo URL (optional)
+ --prefix: prefix added generators, avoids clashing names (optional)
+`
 
 const tmpl = x => path.join('_templates', x)
 
+const resolvePackage = (pkg, opts) => {
+  if (pkg.match(/^http/)) {
+    if (opts.name) {
+      return { name: opts.name, isUrl: true }
+    }
+    return { name: L.last(URL.parse(pkg).path.split('/')), isUrl: true }
+  }
+  return { name: `hygen-${pkg}`, isUrl: false }
+}
+
 const main = async () => {
   const { red, green, yellow } = chalk
-  const args = process.argv.slice(2)
-  if (args.length !== 1) {
-    console.log('please specify a package to add')
+  const args = parser(process.argv.slice(2))
+  const [pkg] = args._
+  if (!pkg) {
+    console.log(help)
     process.exit(1)
   }
-  const [pkg] = args
-  const spinner = ora(`Adding: ${pkg}`).start()
+  console.log(args)
+  const { name, isUrl } = resolvePackage(pkg, args)
+  const spinner = ora(`Adding: ${name}`).start()
+
   try {
-    const pkgName = `hygen-${pkg}`
     await execa.shell(
-      `${path.join(
-        __dirname,
-        '../node_modules/.bin/'
-      )}yarn add --dev ${pkgName}`
+      `${path.join(__dirname, '../node_modules/.bin/')}yarn add --dev ${
+        isUrl ? pkg : name
+      }`
     )
-    const templatePath = path.join('./node_modules', pkgName, '_templates')
+    const templatePath = path.join('./node_modules', name, '_templates')
     const exists = await fs.pathExists(templatePath)
     await fs.mkdirp('_templates')
 
-    // this copies or conditionally namespaces the generators with a dash '-'
-    // pkg-generator
-    console.log('')
+    spinner.stop()
     for (const g of await fs.readdir(templatePath)) {
-      const wantedTargetPath = tmpl(g)
+      const maybePrefixed = args.prefix ? `${args.prefix}-${g}` : g
+      const wantedTargetPath = tmpl(maybePrefixed)
       const sourcePath = path.join(templatePath, g)
-      const namespaced = `${pkg}-${g}`
 
       if (await fs.pathExists(wantedTargetPath)) {
-        spinner.stop()
         if (
-          await inquirer
+          !await inquirer
             .prompt([
               {
-                message: `'${g}' already exists. Namespace it to '${namespaced}'? (Y/n): `,
-                name: 'namespace',
+                message: `'${maybePrefixed}' already exists. Overwrite? (Y/n): `,
+                name: 'overwrite',
                 prefix: '      🤔 :',
                 type: 'confirm'
               }
             ])
-            .then(({ namespace }) => namespace)
+            .then(({ overwrite }) => overwrite)
         ) {
-          await fs.copy(sourcePath, tmpl(namespaced), {
-            recursive: true
-          })
-          console.log(green(`   Added: ${namespaced} (renamed from ${g})`))
-        } else {
-          console.log(yellow(` Skipped: ${g}`))
+          console.log(yellow(` skipped: ${maybePrefixed}`))
+          continue
         }
-      } else {
-        await fs.copy(sourcePath, wantedTargetPath, {
-          recursive: true
-        })
-        console.log(green(`   Added: ${g}`))
       }
+
+      await fs.copy(sourcePath, wantedTargetPath, {
+        recursive: true
+      })
+      console.log(green(`   added: ${maybePrefixed}`))
     }
   } catch (ex) {
-    console.log(red(`\n\nCan't add ${pkg}:\n\n`), ex)
+    console.log(
+      red(`\n\nCan't add ${name}${isUrl ? ` (source: ${pkg})` : ''}\n\n`),
+      ex
+    )
   }
-  spinner.stop()
 }
 
 main()

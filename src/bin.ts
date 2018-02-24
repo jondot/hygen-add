@@ -40,7 +40,6 @@ const main = async () => {
     console.log(help)
     process.exit(1)
   }
-  console.log(args)
   const { name, isUrl } = resolvePackage(pkg, args)
   const spinner = ora(`Adding: ${name}`).start()
 

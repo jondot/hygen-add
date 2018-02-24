@@ -48,7 +48,6 @@ const main = () => __awaiter(this, void 0, void 0, function* () {
         console.log(help);
         process.exit(1);
     }
-    console.log(args);
     const { name, isUrl } = resolvePackage(pkg, args);
     const spinner = ora_1.default(`Adding: ${name}`).start();
     try {

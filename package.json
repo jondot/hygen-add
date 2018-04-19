@@ -1,14 +1,13 @@
 {
   "name": "hygen-add",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "license": "MIT",
   "bin": {
     "hygen-add": "dist/bin.js"
   },
   "scripts": {
     "start": "tsc -w",
-    "release":
-      "yarn build && git commit -am 'build'; yarn version && git push --tags && git push origin master",
+    "release": "yarn build && git commit -am 'build'; yarn version && git push --tags && git push origin master",
     "build": "tsc",
     "test": "node dist/bin.js",
     "hygen-add": "node dist/bin.js"

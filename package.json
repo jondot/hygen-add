@@ -7,8 +7,7 @@
   },
   "scripts": {
     "start": "tsc -w",
-    "release":
-      "yarn build && git commit -am 'build'; yarn version && git push --tags && git push origin master",
+    "release": "yarn build && git commit -am 'build'; yarn version && git push --tags && git push origin master",
     "build": "tsc",
     "test": "node dist/main.js",
     "hygen-add": "node dist/bin.js"
@@ -31,6 +30,7 @@
     "@types/node": "^9.4.4",
     "@types/ora": "^1.3.1",
     "hygen-test-package": "^0.0.2",
-    "tslint-config-prettier": "^1.7.0"
+    "tslint-config-prettier": "^1.7.0",
+    "typescript": "^2.8.1"
   }
 }

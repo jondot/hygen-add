@@ -23,7 +23,7 @@ $ hygen-add PACKAGE [--name NAME] [--prefix PREFIX]
 const tmpl = x => path.join('_templates', x)
 
 const resolvePackage = (pkg, opts) => {
-  if (pkg.match(/^http/)) {
+  if (pkg.match(/^(http|git\+ssh)/)) {
     if (opts.name) {
       return { name: opts.name, isUrl: true }
     }

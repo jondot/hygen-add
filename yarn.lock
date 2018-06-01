@@ -191,6 +191,10 @@ cross-spawn@^5.0.1:
     shebang-command "^1.2.0"
     which "^1.2.9"
 
+"dataloy-entities-generator@git+ssh://git@bitbucket.org:/dataloy/dataloy-entities-generator":
+  version "1.0.0"
+  resolved "git+ssh://git@bitbucket.org:/dataloy/dataloy-entities-generator#c5a9d190bf90ef2f3f9dcb5f31dd30b00e8a02db"
+
 escape-string-regexp@^1.0.5:
   version "1.0.5"
   resolved "https://registry.yarnpkg.com/escape-string-regexp/-/escape-string-regexp-1.0.5.tgz#1b61c0562190a8dff6ae3bb2cf0200ca130b86d4"
